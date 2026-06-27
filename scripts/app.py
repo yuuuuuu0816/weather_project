@@ -27,22 +27,26 @@ DATA_PATH = os.path.join(BASE_DIR, "data", "zhejiang_THI_data.csv")
 FEAT_PATH = os.path.join(BASE_DIR, "data", "city_features.csv")
 IMAGE_PATH = os.path.join(BASE_DIR, "images", "浙江地图.jpg")
 
+
 @st.cache_data
 def load_data():
     df = pd.read_csv(DATA_PATH)
     df["time"] = pd.to_datetime(df["time"])
     return df
 
+
 @st.cache_data
 def load_features():
     return pd.read_csv(FEAT_PATH)
 
+
 df = load_data()
 city_features = load_features()
 
-# ========== 界面样式美化 ==========
+# ========== 界面样式优化（真正可见的毛玻璃效果） ==========
 st.markdown("""
 <style>
+    /* ===== 全局背景（柔和渐变，让毛玻璃可见） ===== */
     .stApp {
         background: linear-gradient(145deg, #eef2f7 0%, #dce3ed 100%);
     }
@@ -50,7 +54,8 @@ st.markdown("""
         padding-top: 1.5rem;
         padding-bottom: 1.5rem;
     }
-    
+
+    /* ===== 顶部横幅 ===== */
     .banner {
         background: linear-gradient(145deg, #0b1a3a 0%, #1a3a6b 60%, #2a5a8a 100%);
         border-radius: 20px;
@@ -99,7 +104,8 @@ st.markdown("""
         object-fit: cover;
         box-shadow: 0 4px 16px rgba(0,0,0,0.15);
     }
-    
+
+    /* ===== 研究框架卡片（半透明+毛玻璃） ===== */
     .framework-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -125,7 +131,8 @@ st.markdown("""
     .framework-item .icon { font-size: 1.8rem; display: block; margin-bottom: 0.1rem; }
     .framework-item .title { font-weight: 600; color: #0b1a3a; font-size: 0.9rem; }
     .framework-item .desc { font-size: 0.75rem; color: #5a6a7a; margin-top: 0.05rem; }
-    
+
+    /* ===== 指标卡片（半透明+毛玻璃） ===== */
     .metric-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -152,7 +159,8 @@ st.markdown("""
     .metric-card .icon { font-size: 1.6rem; display: block; }
     .metric-card .value { font-size: 1.8rem; font-weight: 700; color: #0b1a3a; margin: 0.1rem 0; }
     .metric-card .label { font-size: 0.75rem; color: #5a6a7a; }
-    
+
+    /* ===== 图例说明（半透明+毛玻璃） ===== */
     .legend-box {
         background: rgba(255, 255, 255, 0.7);
         backdrop-filter: blur(12px);
@@ -166,7 +174,8 @@ st.markdown("""
     .legend-box table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     .legend-box td, .legend-box th { padding: 0.3rem 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.05); }
     .legend-box .color-dot { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin-right: 0.4rem; }
-    
+
+    /* ===== 图表卡片（半透明+毛玻璃） ===== */
     .chart-card {
         background: rgba(255, 255, 255, 0.7);
         backdrop-filter: blur(12px);
@@ -182,7 +191,8 @@ st.markdown("""
         box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
     .chart-card .chart-title { font-weight: 600; color: #0b1a3a; font-size: 0.95rem; margin-bottom: 0.5rem; }
-    
+
+    /* ===== 标签页 ===== */
     .stTabs [data-baseweb="tab-list"] {
         gap: 0.3rem;
         background: rgba(255,255,255,0.6);
@@ -210,7 +220,8 @@ st.markdown("""
         color: white !important;
         box-shadow: 0 4px 12px rgba(11, 26, 58, 0.25);
     }
-    
+
+    /* ===== 侧边栏 ===== */
     [data-testid="stSidebar"] {
         background: rgba(255,255,255,0.75);
         backdrop-filter: blur(16px);
@@ -225,7 +236,8 @@ st.markdown("""
         color: #0b1a3a;
         font-size: 0.85rem;
     }
-    
+
+    /* ===== 通用 ===== */
     .section-title { font-size: 1.15rem; font-weight: 700; color: #0b1a3a; margin: 1.2rem 0 0.8rem 0; }
     .footer {
         text-align: center;
@@ -236,7 +248,8 @@ st.markdown("""
         border-top: 1px solid rgba(255,255,255,0.3);
         letter-spacing: 0.3px;
     }
-    
+
+    /* ===== 模型评估指标卡 ===== */
     .metric-eval {
         background: rgba(255,255,255,0.8);
         backdrop-filter: blur(8px);
@@ -367,14 +380,15 @@ with col_right:
     if len(date_range) == 2:
         st.session_state["sel_start"], st.session_state["sel_end"] = date_range
 
-st.info(f"📍 当前查看：**{st.session_state['sel_start'].strftime('%Y年%m月%d日')}** 至 **{st.session_state['sel_end'].strftime('%Y年%m月%d日')}**  |  🏙️ {', '.join(selected_cities)}")
+st.info(
+    f"📍 当前查看：**{st.session_state['sel_start'].strftime('%Y年%m月%d日')}** 至 **{st.session_state['sel_end'].strftime('%Y年%m月%d日')}**  |  🏙️ {', '.join(selected_cities)}")
 
 # ========== 数据过滤 ==========
 filtered_df = df[df["city"].isin(selected_cities)]
 filtered_df = filtered_df[
     (filtered_df["time"].dt.date >= st.session_state["sel_start"]) &
     (filtered_df["time"].dt.date <= st.session_state["sel_end"])
-]
+    ]
 
 if filtered_df.empty:
     st.warning("当前筛选条件下没有数据")
@@ -538,7 +552,7 @@ with tab5:
     max_thi_city = city_data["THI"].max()
     avg_temp_city = city_data["temperature"].mean()
     avg_hum_city = city_data["humidity"].mean()
-    
+
     if avg_thi_city < 22:
         level, color, advice = "🟢 舒适", "#27ae60", "气候宜人，适合户外活动"
     elif avg_thi_city < 26:
@@ -547,7 +561,7 @@ with tab5:
         level, color, advice = "🟠 较不舒适", "#e67e22", "建议避免中午户外活动"
     else:
         level, color, advice = "🔴 非常不舒适", "#e74c3c", "高温高湿，尽量减少户外活动"
-    
+
     st.markdown(f"""
     <div style="background:#f8f9fa; padding:1.2rem 1.5rem; border-radius:12px; border-left:4px solid {color};">
         <h3 style="margin:0 0 0.5rem 0;">{report_city}</h3>
@@ -637,11 +651,17 @@ with tab7:
     fig_map.update_traces(textposition="top center")
     st.plotly_chart(fig_map, use_container_width=True)
 
+
     def classify(val):
-        if val < 22: return "🟢 舒适"
-        elif val < 26: return "🟡 较为舒适"
-        elif val < 30: return "🟠 较不舒适"
-        else: return "🔴 非常不舒适"
+        if val < 22:
+            return "🟢 舒适"
+        elif val < 26:
+            return "🟡 较为舒适"
+        elif val < 30:
+            return "🟠 较不舒适"
+        else:
+            return "🔴 非常不舒适"
+
 
     filtered_df["level"] = filtered_df["THI"].apply(classify)
     level_counts = filtered_df["level"].value_counts().reset_index()
@@ -676,32 +696,33 @@ with tab7:
 with tab8:
     st.markdown('<div class="chart-card">', unsafe_allow_html=True)
     st.markdown('<div class="chart-title">📊 模型评估：THI 预测</div>', unsafe_allow_html=True)
-    
+
     st.markdown("""
     **建模目标**：使用气温、湿度、风速三个特征，预测热舒适度指数 (THI)。  
     **数据**：当前筛选后的所有逐小时数据，共计 {} 条。  
     **模型对比**：线性回归 (基准) 与 随机森林 (非线性)。
     """.format(len(filtered_df)))
-    
+
     model_df = filtered_df[["temperature", "humidity", "windspeed", "THI"]].dropna()
     if len(model_df) < 50:
         st.warning("数据量不足，无法进行建模评估。")
     else:
         X = model_df[["temperature", "humidity", "windspeed"]]
         y = model_df["THI"]
-        
+
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
-        
+
         lr = LinearRegression()
         lr.fit(X_train, y_train)
         y_pred_lr = lr.predict(X_test)
-        
+
         rf = RandomForestRegressor(n_estimators=100, random_state=42)
         rf.fit(X_train, y_train)
         y_pred_rf = rf.predict(X_test)
-        
+
+
         def evaluate(y_true, y_pred):
             mae = mean_absolute_error(y_true, y_pred)
             rmse = np.sqrt(mean_squared_error(y_true, y_pred))
@@ -709,10 +730,11 @@ with tab8:
             mask = y_true != 0
             mape = np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
             return mae, rmse, r2, mape
-        
+
+
         mae_lr, rmse_lr, r2_lr, mape_lr = evaluate(y_test, y_pred_lr)
         mae_rf, rmse_rf, r2_rf, mape_rf = evaluate(y_test, y_pred_rf)
-        
+
         st.markdown("#### 模型性能对比")
         col1, col2 = st.columns(2)
         with col1:
@@ -735,7 +757,7 @@ with tab8:
                 <div class="metric-eval"><span class="val">{mape_rf:.2f}%</span><span class="lbl"> MAPE</span></div>
             </div>
             """, unsafe_allow_html=True)
-        
+
         st.markdown("#### 特征重要性 (随机森林)")
         importance = rf.feature_importances_
         feature_names = ["气温", "湿度", "风速"]
@@ -746,7 +768,7 @@ with tab8:
                          color="重要性", color_continuous_scale="Blues")
         fig_imp.update_layout(height=300, showlegend=False)
         st.plotly_chart(fig_imp, use_container_width=True)
-        
+
         st.markdown("#### 预测值 vs 真实值")
         sample_idx = np.random.choice(len(y_test), min(200, len(y_test)), replace=False)
         plot_df = pd.DataFrame({
@@ -765,19 +787,19 @@ with tab8:
                                       line=dict(dash="dash", color="gray")))
         fig_pred.update_layout(height=400)
         st.plotly_chart(fig_pred, use_container_width=True)
-        
+
         st.markdown("#### 残差分布 (随机森林)")
         residuals = y_test - y_pred_rf
         fig_res = px.histogram(residuals, nbins=50, title="随机森林预测残差分布",
                                labels={"value": "残差"})
         fig_res.update_layout(height=300)
         st.plotly_chart(fig_res, use_container_width=True)
-        
+
         st.markdown("""
         **结论**：随机森林模型在各项指标上均优于线性回归，说明THI与特征之间存在非线性关系。  
         特征重要性显示 **气温** 是影响THI的最主要因素，湿度次之，风速影响较小。
         """)
-    
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ========== 页脚 ==========
